@@ -13,6 +13,7 @@ else
 fi
 : ${DATABASE:?"DATABASE env variable is required"}
 export BACKUP_PATH=${BACKUP_PATH:-/data/influxdb/backup}
+export BACKUP_ARCHIVE_PATH=${BACKUP_ARCHIVE_PATH:-${BACKUP_PATH}.tgz}
 export DATABASE_HOST=${DATABASE_HOST:-localhost}
 export DATABASE_PORT=${DATABASE_PORT:-8088}
 export DATABASE_META_DIR=${DATABASE_META_DIR:-/var/lib/influxdb/meta}
@@ -41,10 +42,10 @@ backup() {
   fi
 
   # Compress backup directory
-  if [ -e $BACKUP_PATH.tgz ]; then
-    rm -rf $BACKUP_PATH.tgz
+  if [ -e $BACKUP_ARCHIVE_PATH ]; then
+    rm -rf $BACKUP_ARCHIVE_PATH
   fi
-  tar -cvzf $BACKUP_PATH.tgz $BACKUP_PATH
+  tar -cvzf $BACKUP_ARCHIVE_PATH $BACKUP_PATH
 
   # Push backup file to S3
   echo "Sending file to S3"
@@ -53,7 +54,7 @@ backup() {
   else
     echo "No latest backup exists in S3"
   fi
-  if aws s3 cp $BACKUP_PATH.tgz s3://${S3_BUCKET}/${S3_KEY_PREFIX}latest.tgz; then
+  if aws s3 cp $BACKUP_ARCHIVE_PATH s3://${S3_BUCKET}/${S3_KEY_PREFIX}latest.tgz; then
     echo "Backup file copied to s3://${S3_BUCKET}/${S3_KEY_PREFIX}latest.tgz"
   else
     echo "Backup file failed to upload"
@@ -76,13 +77,13 @@ restore() {
     echo "Removing out of date backup"
     rm -rf $BACKUP_PATH
   fi
-  if [ -e $BACKUP_PATH.tgz ]; then
+  if [ -e $BACKUP_ARCHIVE_PATH ]; then
     echo "Removing out of date backup"
-    rm -rf $BACKUP_PATH.tgz
+    rm -rf $BACKUP_ARCHIVE_PATH
   fi
   # Get backup file from S3
   echo "Downloading latest backup from S3"
-  if aws s3 cp s3://${S3_BUCKET}/${S3_KEY_PREFIX}latest.tgz $BACKUP_PATH.tgz; then
+  if aws s3 cp s3://${S3_BUCKET}/${S3_KEY_PREFIX}latest.tgz $BACKUP_ARCHIVE_PATH; then
     echo "Downloaded"
   else
     echo "Failed to download latest backup"
@@ -90,7 +91,7 @@ restore() {
   fi
 
   # Extract archive
-  tar -xvzf $BACKUP_PATH.tgz -C /
+  tar -xvzf $BACKUP_ARCHIVE_PATH -C /
 
   # Restore database from backup file
   echo "Running restore"

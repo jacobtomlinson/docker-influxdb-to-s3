@@ -75,4 +75,5 @@ docker run \
 | `DATABASE_PORT` | Port of influxdb instance  | `8098` | `8088`   | Yes |
 | `DATABASE_META_DIR` | Path to local influxdb meta dir  | `/path/to/influxdb/meta` | `/var/lib/influxdb/meta`   | Yes |
 | `DATABASE_DATA_DIR` | Path to local influxdb data dir  | `/path/to/influxdb/data` | `/var/lib/influxdb/data`   | Yes |
-| `BACKUP_PATH` | Path to write the backup (within the container)  | `/myvolume/mybackup.db` | `${DATABASE_PATH}.bak`   | Yes |
+| `BACKUP_PATH` | Directory to write the backup (within the container)  | `/myvolume/mybackup` | `/data/influxdb/backup`   | Yes |
+| `BACKUP_ARCHIVE_PATH` | Path to compress the backup (within the container)  | `/myvolume/mybackup.tgz` | `${BACKUP_PATH}.tgz`   | Yes |
