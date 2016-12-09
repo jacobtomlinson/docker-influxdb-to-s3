@@ -10,4 +10,4 @@ RUN pip --no-cache-dir install awscli
 COPY influxdb-to-s3.sh /usr/bin/influxdb-to-s3
 
 ENTRYPOINT ["/usr/bin/influxdb-to-s3"]
-CMD ["cron", "* 1 * * *"]
+CMD ["cron", "0 1 * * *"]
